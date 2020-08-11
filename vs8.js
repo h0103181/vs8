@@ -40,7 +40,7 @@ function deepcopy(from) {
 
 /** * add ele, text, or html ele some parent
  * 
- *  param: {ele, tag, text, html} 
+ *  param: {ele, tag, text, html, class, style} 
  * @returns {HTMLElement} */
 function add(param) {
     //set parent
@@ -51,7 +51,12 @@ function add(param) {
     let p;
     if ('tag' in param) {
         p = document.createElement(param.tag);
-        if ('class' in param) p.classList.add(...param.class.split(' ').filter((str) => { return str.length > 0 }));
+        if ('class' in param) {
+            p.classList.add(...param.class.split(' ').filter((str) => { return str.length > 0 }));
+        }
+        if ('style' in param) {
+            p.style.cssText = param.style;
+        }
         ele.appendChild(p);
         let newparam = deepcopy(param);
         delete newparam.tag;
@@ -91,21 +96,30 @@ function wait_timeout(ms) {
  * @returns {Promise<DOMHighResTimeStamp>} */
 function wait_frame_out() {
     return new Promise((resolve) => {
-        window.requestAnimationFrame(function (timestamp) { resolve(timestamp); });
+        window.requestAnimationFrame(function(timestamp) { resolve(timestamp); });
     });
 }
 
 /** parse cookie
  * @return Object
  */
-function parse_cookie() {
-    return document.cookie
-        .split(';')
-        .map(v => v.split('='))
-        .reduce((acc, v) => {
-            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
-            return acc;
-        }, {});
+function parse_cookie(cookie_str = document.cookie) {
+    let out = {};
+    for (let val of cookie_str.split(';')) {
+        if (val) {
+            let m;
+            if (m = val.match(/(.*?)=(.*)/)) out[decodeURIComponent(m[1].trim())] = decodeURIComponent(m[2].trim());
+            else out[decodeURIComponent(val.trim())] = '';
+        }
+    }
+    return out;
+}
+
+/** print_r -- php-like print_r() for debug
+ * @return void
+ */
+function print_r(obj) {
+    add({ text: JSON.stringify(obj) });
 }
 
 /** detect mobile
@@ -125,5 +139,3 @@ function is_chrome() {
 function is_touch() {
     return ('ontouchstart' in window);
 }
-
-
