@@ -120,6 +120,7 @@ function parse_cookie(cookie_str = document.cookie) {
  */
 function print_r(obj) {
     add({ text: JSON.stringify(obj) });
+    add({ html: '<br />' });
 }
 
 /** detect mobile
